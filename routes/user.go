@@ -25,5 +25,8 @@ func CreateUser(C *fiber.Ctx) error {
 
 	database.Database.Db.Create(&user)
 	responseUser := CreateResponseUser(user)
-	return C.Status(200).JSON(responseUser)
+	return C.Status(200).JSON(fiber.Map{
+		"message": "Success",
+		"data": responseUser,
+	})
 }
