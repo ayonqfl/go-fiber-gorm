@@ -1,0 +1,21 @@
+# Temporary files
+tmp/
+
+# Build outputs
+*.exe
+*.exe~
+bin/
+dist/
+
+# Logs
+*.log
+air_errors.log
+
+# Dependencies
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
