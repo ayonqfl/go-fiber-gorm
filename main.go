@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
+	// "github.com/ayonqfl/go-fiber-gorm/middleware"
 	"github.com/ayonqfl/go-fiber-gorm/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -14,12 +15,14 @@ func Welcome(C *fiber.Ctx) error {
 }
 
 func setupRoutes(app *fiber.App) {
-	// Wellcome endpoint
+	// Define the Wellcome routes
 	app.Get("/api", Welcome)
 
-	// User endpoints
-	app.Post("/api/users", routes.CreateUser)
-	app.Get("/api/users", routes.GetUsers)
+	// Apply authentication middleware for protected routes
+	// protected := app.Use(middleware.AuthMiddleware())
+
+	// Define the User routes
+	routes.UserHandlers(app.Group("/api/users"))
 }
 
 func main() {
@@ -29,7 +32,9 @@ func main() {
 	}
 
 	database.ConnectDb()
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		AppName: "qTrader OMS API",
+	})
 
 	setupRoutes(app)
 	log.Fatal(app.Listen(":9000"))

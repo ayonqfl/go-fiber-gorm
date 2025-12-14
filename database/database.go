@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ayonqfl/go-fiber-gorm/models"
+	// "github.com/ayonqfl/go-fiber-gorm/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -40,9 +40,10 @@ func ConnectDb() {
 
 	log.Println("Connected to database successfully")
 	db.Logger = logger.Default.LogMode(logger.Info)
-	log.Println("Running Migrations")
 
-	// Add Migrations
-	db.AutoMigrate(&models.User{}, &models.Product{}, &models.Order{})
+	// log.Println("Running Migrations")
+	// Since table already exists, no need to run migrations
+	// db.AutoMigrate(&models.User{})
+
 	Database = DbInstance{Db: db}
 }
