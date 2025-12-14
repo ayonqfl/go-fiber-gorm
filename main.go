@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
-	// "github.com/ayonqfl/go-fiber-gorm/middleware"
+	"github.com/ayonqfl/go-fiber-gorm/middleware"
 	"github.com/ayonqfl/go-fiber-gorm/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -19,10 +19,10 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/api", Welcome)
 
 	// Apply authentication middleware for protected routes
-	// protected := app.Use(middleware.AuthMiddleware())
+	protected := app.Use(middleware.AuthMiddleware())
 
 	// Define the User routes
-	routes.UserHandlers(app.Group("/api/users"))
+	routes.UserHandlers(protected.Group("/api/users"))
 }
 
 func main() {
