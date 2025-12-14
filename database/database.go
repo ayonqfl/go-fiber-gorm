@@ -29,9 +29,13 @@ func ConnectDb() {
 		os.Getenv("DB_TIMEZONE"),
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
+	// -- simple connection
+	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	// 	Logger: logger.Default.LogMode(logger.Info),
+	// })
+
+	// -- Disable prepared statements (PostgreSQL prepared statement caching issue with GORM)
+	db, err := gorm.Open(postgres.New(postgres.Config{DSN: dsn, PreferSimpleProtocol: true}), &gorm.Config{Logger: logger.Default.LogMode(logger.Info), PrepareStmt: false})
 
 	if err != nil {
 		log.Fatal("Failed to connect to database. \n", err)

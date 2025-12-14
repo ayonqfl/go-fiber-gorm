@@ -152,6 +152,10 @@ func GetUserIDFromContext(c *fiber.Ctx) string {
 	return userIDStr
 }
 
+
+// ---- bellow this all functions are user handlers ----
+
+
 // GetUsernameFromContext retrieves username from context
 func GetUsernameFromContext(c *fiber.Ctx) string {
 	username := c.Locals("username")
