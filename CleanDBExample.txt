@@ -174,3 +174,84 @@ func main() {
 
 	log.Println("Server shutdown complete")
 }
+
+
+
+// ---- helpers/authentication: bellow this all functions are user handlers ----
+// GetUserFromContext retrieves user data from context
+func GetUserFromContext(c *fiber.Ctx) *TokenData {
+	user := c.Locals("user")
+	if user == nil {
+		return nil
+	}
+	userData, ok := user.(*TokenData)
+	if !ok {
+		return nil
+	}
+	return userData
+}
+
+// GetUserIDFromContext retrieves user_id from context as string
+func GetUserIDFromContext(c *fiber.Ctx) string {
+	userID := c.Locals("user_id")
+	if userID == nil {
+		return ""
+	}
+	userIDStr, ok := userID.(string)
+	if !ok {
+		return ""
+	}
+	return userIDStr
+}
+
+// GetUsernameFromContext retrieves username from context
+func GetUsernameFromContext(c *fiber.Ctx) string {
+	username := c.Locals("username")
+	if username == nil {
+		return ""
+	}
+	usernameStr, ok := username.(string)
+	if !ok {
+		return ""
+	}
+	return usernameStr
+}
+
+// GetUserRoleFromContext retrieves user role from context
+func GetUserRoleFromContext(c *fiber.Ctx) string {
+	role := c.Locals("users_roles")
+	if role == nil {
+		return ""
+	}
+	roleStr, ok := role.(string)
+	if !ok {
+		return ""
+	}
+	return roleStr
+}
+
+// GetClientCodeFromContext retrieves client code from context
+func GetClientCodeFromContext(c *fiber.Ctx) string {
+	clientCode := c.Locals("client_code")
+	if clientCode == nil {
+		return ""
+	}
+	clientCodeStr, ok := clientCode.(string)
+	if !ok {
+		return ""
+	}
+	return clientCodeStr
+}
+
+// GetUserIDIntFromContext retrieves user id (int) from context
+func GetUserIDIntFromContext(c *fiber.Ctx) int {
+	id := c.Locals("id")
+	if id == nil {
+		return 0
+	}
+	idInt, ok := id.(int)
+	if !ok {
+		return 0
+	}
+	return idInt
+}

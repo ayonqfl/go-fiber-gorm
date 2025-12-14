@@ -9,7 +9,7 @@ import (
 
 	// "github.com/ayonqfl/go-fiber-gorm/database"
 	"github.com/ayonqfl/go-fiber-gorm/models"
-	"github.com/gofiber/fiber/v2"
+	// "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v4"
 	"gorm.io/gorm"
@@ -31,25 +31,6 @@ type TokenData struct {
 	jwt.RegisteredClaims
 }
 
-// ShouldSkipAuth checks if the path should skip authentication
-func ShouldSkipAuth(path string, skipPaths []string, skipKeywords []string) bool {
-	// Check if path is in skip paths
-	for _, skipPath := range skipPaths {
-		if strings.HasPrefix(path, skipPath) {
-			return true
-		}
-	}
-
-	// Check if path contains skip keywords
-	for _, keyword := range skipKeywords {
-		if strings.Contains(path, keyword) {
-			return true
-		}
-	}
-
-	return false
-}
-
 // ExtractBearerToken extracts the token from Bearer format
 func ExtractBearerToken(authHeader string) string {
 	parts := strings.Split(authHeader, " ")
@@ -59,7 +40,6 @@ func ExtractBearerToken(authHeader string) string {
 	return parts[1]
 }
 
-// ValidateToken validates the JWT token and returns the token data
 func ValidateToken(tokenString string, jwtSecret string) (*TokenData, error) {
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &TokenData{}, func(token *jwt.Token) (interface{}, error) {
@@ -71,30 +51,50 @@ func ValidateToken(tokenString string, jwtSecret string) (*TokenData, error) {
 	})
 
 	if err != nil {
+		log.Warnf("Token parse error: %v", err)
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
 
 	// Check if token is valid
 	if !token.Valid {
+		log.Warn("Token is not valid")
 		return nil, errors.New("invalid token")
 	}
 
 	// Extract claims
 	claims, ok := token.Claims.(*TokenData)
 	if !ok {
+		log.Warn("Failed to extract claims")
 		return nil, errors.New("failed to extract token claims")
 	}
 
+	// // Debug expiration start
+	// log.Infof("=== Token Expiration Debug ===")
+	// log.Infof("Token ExpiresAt: %v", claims.ExpiresAt)
+	// if claims.ExpiresAt != nil {
+	// 	log.Infof("Expiration Time: %v", claims.ExpiresAt.Time)
+	// 	log.Infof("Current Time: %v", time.Now())
+	// 	log.Infof("Time Until Expiry: %v", time.Until(claims.ExpiresAt.Time))
+	// 	log.Infof("Is Expired: %v", claims.ExpiresAt.Before(time.Now()))
+	// } else {
+	// 	log.Warn("WARNING: Token has no expiration time!")
+	// }
+	// log.Infof("=============================")
+	// // Debug expiration end
+
 	// Verify token has not expired
 	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
+		log.Warn("Token has expired!")
 		return nil, errors.New("token has expired")
 	}
 
 	// Verify required fields
 	if claims.Username == "" {
+		log.Warn("Token missing username")
 		return nil, errors.New("invalid token: missing username")
 	}
 
+	log.Infof("Token validation successful for user: %s", claims.Username)
 	return claims, nil
 }
 
@@ -126,85 +126,4 @@ func GetJWTSecret() string {
 	return jwtSecret
 }
 
-// GetUserFromContext retrieves user data from context
-func GetUserFromContext(c *fiber.Ctx) *TokenData {
-	user := c.Locals("user")
-	if user == nil {
-		return nil
-	}
-	userData, ok := user.(*TokenData)
-	if !ok {
-		return nil
-	}
-	return userData
-}
-
-// GetUserIDFromContext retrieves user_id from context as string
-func GetUserIDFromContext(c *fiber.Ctx) string {
-	userID := c.Locals("user_id")
-	if userID == nil {
-		return ""
-	}
-	userIDStr, ok := userID.(string)
-	if !ok {
-		return ""
-	}
-	return userIDStr
-}
-
-
-// ---- bellow this all functions are user handlers ----
-
-
-// GetUsernameFromContext retrieves username from context
-func GetUsernameFromContext(c *fiber.Ctx) string {
-	username := c.Locals("username")
-	if username == nil {
-		return ""
-	}
-	usernameStr, ok := username.(string)
-	if !ok {
-		return ""
-	}
-	return usernameStr
-}
-
-// GetUserRoleFromContext retrieves user role from context
-func GetUserRoleFromContext(c *fiber.Ctx) string {
-	role := c.Locals("users_roles")
-	if role == nil {
-		return ""
-	}
-	roleStr, ok := role.(string)
-	if !ok {
-		return ""
-	}
-	return roleStr
-}
-
-// GetClientCodeFromContext retrieves client code from context
-func GetClientCodeFromContext(c *fiber.Ctx) string {
-	clientCode := c.Locals("client_code")
-	if clientCode == nil {
-		return ""
-	}
-	clientCodeStr, ok := clientCode.(string)
-	if !ok {
-		return ""
-	}
-	return clientCodeStr
-}
-
-// GetUserIDIntFromContext retrieves user id (int) from context
-func GetUserIDIntFromContext(c *fiber.Ctx) int {
-	id := c.Locals("id")
-	if id == nil {
-		return 0
-	}
-	idInt, ok := id.(int)
-	if !ok {
-		return 0
-	}
-	return idInt
-}
 

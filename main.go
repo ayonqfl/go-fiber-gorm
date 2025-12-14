@@ -10,19 +10,20 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Welcome(C *fiber.Ctx) error {
-	return C.SendString("Welcome to OMS API's")
+func Welcome(c *fiber.Ctx) error {
+	return c.SendString("Welcome to OMS API's")
 }
 
 func setupRoutes(app *fiber.App) {
-	// Define the Wellcome routes
+	// Public routes (no authentication)
 	app.Get("/api", Welcome)
 
-	// Apply authentication middleware for protected routes
-	protected := app.Use(middleware.AuthMiddleware())
+	// Protected routes group with authentication middleware
+	api := app.Group("/api")
+	api.Use(middleware.AuthMiddleware())
 
-	// Define the User routes
-	routes.UserHandlers(protected.Group("/api/users"))
+	// Define the User routes under protected group
+	routes.UserHandlers(api.Group("/users"))
 }
 
 func main() {
