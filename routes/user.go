@@ -90,7 +90,7 @@ func UserHandlers(route fiber.Router) {
 		users := []models.User{}
 		responseUsers := []UserSerializer{}
 
-		database.Database.Db.Order("id DESC").Limit(100).Find(&users)
+		database.Database.Db.Order("id DESC").Limit(10).Find(&users)
 		for _, user := range users {
 			responseUser := CreateResponseUser(user)
 			responseUsers = append(responseUsers, responseUser)
