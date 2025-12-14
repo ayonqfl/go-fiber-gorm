@@ -43,9 +43,8 @@ func ExtractBearerToken(authHeader string) string {
 func ValidateToken(tokenString string, jwtSecret string) (*TokenData, error) {
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &TokenData{}, func(token *jwt.Token) (interface{}, error) {
-		// Verify signing method
 		if token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method")
 		}
 		return []byte(jwtSecret), nil
 	})
@@ -68,25 +67,29 @@ func ValidateToken(tokenString string, jwtSecret string) (*TokenData, error) {
 		return nil, errors.New("failed to extract token claims")
 	}
 
-	// // Debug expiration start
-	// log.Infof("=== Token Expiration Debug ===")
-	// log.Infof("Token ExpiresAt: %v", claims.ExpiresAt)
-	// if claims.ExpiresAt != nil {
-	// 	log.Infof("Expiration Time: %v", claims.ExpiresAt.Time)
-	// 	log.Infof("Current Time: %v", time.Now())
-	// 	log.Infof("Time Until Expiry: %v", time.Until(claims.ExpiresAt.Time))
-	// 	log.Infof("Is Expired: %v", claims.ExpiresAt.Before(time.Now()))
-	// } else {
-	// 	log.Warn("WARNING: Token has no expiration time!")
-	// }
-	// log.Infof("=============================")
-	// // Debug expiration end
+	if err := claims.Valid(); err != nil {
+		log.Warn("Expired token fails here")
+		return nil, err
+	}
+
+	// Debug expiration start
+	log.Infof("=== Token Expiration Debug ===")
+	log.Infof("Token ExpiresAt: %v", claims.ExpiresAt)
+	if claims.ExpiresAt != nil {
+		log.Infof("Expiration Time: %v", claims.ExpiresAt.Time)
+		log.Infof("Current Time: %v", time.Now())
+		log.Infof("Time Until Expiry: %v", time.Until(claims.ExpiresAt.Time))
+		log.Infof("Is Expired: %v", claims.ExpiresAt.Before(time.Now()))
+	} else {
+		log.Warn("WARNING: Token has no expiration time!")
+	}
+	// Debug expiration end
 
 	// Verify token has not expired
-	if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
-		log.Warn("Token has expired!")
-		return nil, errors.New("token has expired")
-	}
+	// if claims.ExpiresAt != nil && claims.ExpiresAt.Before(time.Now()) {
+	// 	log.Warn("Token has expired!")
+	// 	return nil, errors.New("token has expired")
+	// }
 
 	// Verify required fields
 	if claims.Username == "" {
@@ -125,5 +128,3 @@ func GetJWTSecret() string {
 	}
 	return jwtSecret
 }
-
-
