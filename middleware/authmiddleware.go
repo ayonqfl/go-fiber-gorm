@@ -49,7 +49,7 @@ func AuthMiddleware() fiber.Handler {
 		}
 
 		// Verify user exists in database and is active
-		if err := helpers.VerifyUserExists(database.Database.Db, userData.Username); err != nil {
+		if err := helpers.VerifyUserExists(database.GetQtraderDB(), userData.Username); err != nil {
 			log.Warnf("User verification failed: %v", err)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"status":  401,

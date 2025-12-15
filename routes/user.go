@@ -90,7 +90,7 @@ func UserHandlers(route fiber.Router) {
 		users := []models.User{}
 		responseUsers := []UserSerializer{}
 
-		database.Database.Db.Order("id DESC").Limit(10).Find(&users)
+		database.GetQtraderDB().Order("id DESC").Limit(10).Find(&users)
 		for _, user := range users {
 			responseUser := CreateResponseUser(user)
 			responseUsers = append(responseUsers, responseUser)
@@ -110,7 +110,7 @@ func UserHandlers(route fiber.Router) {
 			return C.Status(400).JSON(err.Error())
 		}
 
-		database.Database.Db.Create(&user)
+		database.GetQtraderDB().Create(&user)
 		responseUser := CreateResponseUser(user)
 		return C.Status(200).JSON(fiber.Map{
 			"message": "Success",

@@ -2,6 +2,9 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
 	"github.com/ayonqfl/go-fiber-gorm/helpers"
@@ -19,6 +22,33 @@ func setupRoutes(app *fiber.App) {
 	// Public routes (no authentication)
 	app.Get("/api", Welcome)
 
+	// Health check endpoint
+	app.Get("/health", func(c *fiber.Ctx) error {
+		// Check QtraderDB
+		qtraderSQL, err := database.DB.QtraderDB.DB()
+		qtraderHealthy := err == nil && qtraderSQL.Ping() == nil
+
+		// Check TradeDB
+		tradeSQL, err := database.DB.TradeDB.DB()
+		tradeHealthy := err == nil && tradeSQL.Ping() == nil
+
+		status := "healthy"
+		httpStatus := fiber.StatusOK
+
+		if !qtraderHealthy || !tradeHealthy {
+			status = "unhealthy"
+			httpStatus = fiber.StatusServiceUnavailable
+		}
+
+		return c.Status(httpStatus).JSON(fiber.Map{
+			"status": status,
+			"databases": fiber.Map{
+				"qtraderdb": qtraderHealthy,
+				"tradedb":   tradeHealthy,
+			},
+		})
+	})
+
 	// Protected routes group with authentication middleware
 	api := app.Group("/api")
 	api.Use(middleware.AuthMiddleware())
@@ -28,18 +58,54 @@ func setupRoutes(app *fiber.App) {
 }
 
 func main() {
+	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	database.ConnectDb()
+	// Connect to all databases
+	database.ConnectDatabases()
+
+	// Initialize Redis
 	helpers.InitRedis()
 
+	// Defer closing database connections
+	defer func() {
+		if err := database.CloseDatabases(); err != nil {
+			log.Printf("Error closing databases: %v", err)
+		}
+	}()
+
+	// Create Fiber app
 	app := fiber.New(fiber.Config{
 		AppName: "qTrader OMS API",
 	})
 
+	// Setup routes
 	setupRoutes(app)
-	log.Fatal(app.Listen(":9000"))
+
+	// Channel to listen for interrupt signals
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	// Start server in a goroutine
+	go func() {
+		if err := app.Listen(":9000"); err != nil {
+			log.Fatalf("Error starting server: %v", err)
+		}
+	}()
+
+	log.Println("Server started on :9000")
+
+	// Wait for interrupt signal
+	<-c
+	log.Println("Shutting down gracefully...")
+
+	// Shutdown the server
+	if err := app.Shutdown(); err != nil {
+		log.Fatalf("Error during shutdown: %v", err)
+	}
+
+	log.Println("Server shutdown complete")
 }
