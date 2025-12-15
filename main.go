@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
+	"github.com/ayonqfl/go-fiber-gorm/helpers"
 	"github.com/ayonqfl/go-fiber-gorm/middleware"
 	"github.com/ayonqfl/go-fiber-gorm/routes"
 	"github.com/gofiber/fiber/v2"
@@ -33,6 +34,8 @@ func main() {
 	}
 
 	database.ConnectDb()
+	helpers.InitRedis()
+
 	app := fiber.New(fiber.Config{
 		AppName: "qTrader OMS API",
 	})

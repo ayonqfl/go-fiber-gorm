@@ -255,3 +255,18 @@ func GetUserIDIntFromContext(c *fiber.Ctx) int {
 	}
 	return idInt
 }
+
+
+-- token validation debug code ---
+// // Debug expiration start
+// log.Infof("=== Token Expiration Debug ===")
+// log.Infof("Token ExpiresAt: %v", claims.ExpiresAt)
+// if claims.ExpiresAt != nil {
+// 	log.Infof("Expiration Time: %v", claims.ExpiresAt.Time)
+// 	log.Infof("Current Time: %v", time.Now())
+// 	log.Infof("Time Until Expiry: %v", time.Until(claims.ExpiresAt.Time))
+// 	log.Infof("Is Expired: %v", claims.ExpiresAt.Before(time.Now()))
+// } else {
+// 	log.Warn("WARNING: Token has no expiration time!")
+// }
+// // Debug expiration end
