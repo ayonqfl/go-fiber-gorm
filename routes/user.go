@@ -5,6 +5,7 @@ import (
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
 	"github.com/ayonqfl/go-fiber-gorm/models"
+	"github.com/ayonqfl/go-fiber-gorm/services"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -88,17 +89,25 @@ func UserHandlers(route fiber.Router) {
 	// Define users list API function
 	route.Get("/list", func(C *fiber.Ctx) error {
 		users := []models.User{}
-		responseUsers := []UserSerializer{}
 
-		database.GetQtraderDB().Order("id DESC").Limit(10).Find(&users)
-		for _, user := range users {
-			responseUser := CreateResponseUser(user)
-			responseUsers = append(responseUsers, responseUser)
+		query := database.GetQtraderDB().Model(&models.User{}).Order("id DESC")
+		paginated, err := services.CustomPaginate(C, query, &users, 5)
+		if err != nil {
+			return C.Status(500).JSON(fiber.Map{
+				"message": "Pagination failed",
+				"error":   err.Error(),
+			})
 		}
+
+		responseUsers := []UserSerializer{}
+		for _, user := range users {
+			responseUsers = append(responseUsers, CreateResponseUser(user))
+		}
+		paginated.Items = responseUsers
 
 		return C.Status(200).JSON(fiber.Map{
 			"message": "Success",
-			"data":    responseUsers,
+			"data":    paginated,
 		})
 	})
 
