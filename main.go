@@ -58,8 +58,9 @@ func setupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	api.Use(middleware.AuthMiddleware())
 
-	// Define the User routes under protected group
+	// Define the routes under protected group
 	routes.UserHandlers(api.Group("/users"))
+	routes.MarketHandlers(api.Group("/market"))
 }
 
 func main() {

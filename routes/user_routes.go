@@ -112,18 +112,18 @@ func UserHandlers(route fiber.Router) {
 	})
 
 	// Define users create API function
-	route.Post("/create", func(C *fiber.Ctx) error {
-		var user models.User
+	// route.Post("/create", func(C *fiber.Ctx) error {
+	// 	var user models.User
 
-		if err := C.BodyParser(&user); err != nil {
-			return C.Status(400).JSON(err.Error())
-		}
+	// 	if err := C.BodyParser(&user); err != nil {
+	// 		return C.Status(400).JSON(err.Error())
+	// 	}
 
-		database.GetQtraderDB().Create(&user)
-		responseUser := CreateResponseUser(user)
-		return C.Status(200).JSON(fiber.Map{
-			"message": "Success",
-			"data":    responseUser,
-		})
-	})
+	// 	database.GetQtraderDB().Create(&user)
+	// 	responseUser := CreateResponseUser(user)
+	// 	return C.Status(200).JSON(fiber.Map{
+	// 		"message": "Success",
+	// 		"data":    responseUser,
+	// 	})
+	// })
 }
