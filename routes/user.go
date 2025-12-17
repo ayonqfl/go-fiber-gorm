@@ -91,7 +91,7 @@ func UserHandlers(route fiber.Router) {
 		users := []models.User{}
 
 		query := database.GetQtraderDB().Model(&models.User{}).Order("id DESC")
-		paginated, err := services.CustomPaginate(C, query, &users, 5)
+		paginated, err := services.CustomPaginate(C, query, &users, 50)
 		if err != nil {
 			return C.Status(500).JSON(fiber.Map{
 				"message": "Pagination failed",

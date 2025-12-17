@@ -25,17 +25,21 @@ func setupRoutes(app *fiber.App) {
 	// Health check endpoint
 	app.Get("/health", func(c *fiber.Ctx) error {
 		// Check QtraderDB
-		qtraderSQL, err := database.DB.QtraderDB.DB()
+		qtraderSQL, err := database.GetQtraderDB().DB()
 		qtraderHealthy := err == nil && qtraderSQL.Ping() == nil
 
 		// Check TradeDB
-		tradeSQL, err := database.DB.TradeDB.DB()
+		tradeSQL, err := database.GetTradeDB().DB()
 		tradeHealthy := err == nil && tradeSQL.Ping() == nil
+
+		// Check TradeDB
+		marketSQL, err := database.GetMarketDB().DB()
+		marketHealthy := err == nil && marketSQL.Ping() == nil
 
 		status := "healthy"
 		httpStatus := fiber.StatusOK
 
-		if !qtraderHealthy || !tradeHealthy {
+		if !qtraderHealthy || !tradeHealthy || !marketHealthy {
 			status = "unhealthy"
 			httpStatus = fiber.StatusServiceUnavailable
 		}
@@ -45,6 +49,7 @@ func setupRoutes(app *fiber.App) {
 			"databases": fiber.Map{
 				"qtraderdb": qtraderHealthy,
 				"tradedb":   tradeHealthy,
+				"marketdb":  marketHealthy,
 			},
 		})
 	})

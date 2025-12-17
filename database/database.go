@@ -14,6 +14,7 @@ import (
 type Databases struct {
 	QtraderDB *gorm.DB
 	TradeDB   *gorm.DB
+	MarketDB   *gorm.DB
 }
 
 // Global database instance
@@ -43,6 +44,17 @@ func ConnectDatabases() {
 	DB.TradeDB, err = connectDB(tradeURI, "TradeDB")
 	if err != nil {
 		log.Fatalf("Failed to connect to TradeDB: %v", err)
+	}
+
+	// Connect to MarketDB
+	marketURI := os.Getenv("MARKET_DB_URI")
+	if marketURI == "" {
+		log.Fatal("MARKET_DB_URI not set in environment")
+	}
+
+	DB.MarketDB, err = connectDB(marketURI, "MarketDB")
+	if err != nil {
+		log.Fatalf("Failed to connect to MarketDB: %v", err)
 	}
 
 	log.Println("All databases connected successfully")
@@ -110,6 +122,18 @@ func CloseDatabases() error {
 		}
 	}
 
+	// Close MarketDB
+	if DB.MarketDB != nil {
+		sqlDB, err := DB.MarketDB.DB()
+		if err == nil {
+			if err := sqlDB.Close(); err != nil {
+				log.Printf("Error closing MarketDB: %v", err)
+			} else {
+				log.Println("MarketDB closed successfully")
+			}
+		}
+	}
+
 	log.Println("All database connections closed")
 	return nil
 }
@@ -125,7 +149,15 @@ func GetQtraderDB() *gorm.DB {
 // GetTradeDB returns the TradeDB instance
 func GetTradeDB() *gorm.DB {
 	if DB.TradeDB == nil {
-		log.Fatal("QtraderDB is not initialized")
+		log.Fatal("TradeDB is not initialized")
 	}
 	return DB.TradeDB
+}
+
+// GetMarketDB returns the MarketDB instance
+func GetMarketDB() *gorm.DB {
+	if DB.MarketDB == nil {
+		log.Fatal("MarketDB is not initialized")
+	}
+	return DB.MarketDB
 }
