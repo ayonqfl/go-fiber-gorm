@@ -10,7 +10,7 @@ import (
 	"time"
 
 	// "github.com/ayonqfl/go-fiber-gorm/database"
-	"github.com/ayonqfl/go-fiber-gorm/models"
+	"github.com/ayonqfl/go-fiber-gorm/models/qdb"
 	// "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v4"

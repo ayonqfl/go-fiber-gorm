@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
-	"github.com/ayonqfl/go-fiber-gorm/models"
+	"github.com/ayonqfl/go-fiber-gorm/models/qdb"
 	"github.com/ayonqfl/go-fiber-gorm/services"
 	"github.com/gofiber/fiber/v2"
 )
