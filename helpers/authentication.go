@@ -124,7 +124,7 @@ func ValidateToken(tokenString string, jwtSecret string) (*TokenData, error) {
 
 // VerifyUserExists checks if the user exists in the database and is active
 func VerifyUserExists(db *gorm.DB, username string) error {
-	var user models.User
+	var user qdb.User
 	result := db.Where("LOWER(username) = LOWER(?)", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
