@@ -1,13 +1,11 @@
 package routes
 
 import (
-	"os"
 	"log"
-	"strings"
 
 	"github.com/ayonqfl/go-fiber-gorm/database"
-	"github.com/ayonqfl/go-fiber-gorm/models/qdb"
-	"github.com/ayonqfl/go-fiber-gorm/utils"
+	"github.com/ayonqfl/go-fiber-gorm/helpers"
+	qdb "github.com/ayonqfl/go-fiber-gorm/models/qdb"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,7 +14,7 @@ func MarketHandlers(route fiber.Router) {
 	route.Get("/watchlist", func(c *fiber.Ctx) error {
 		// tableID := c.Query("table_id")
 
-		currentUser, err := utils.GetCurrentUser(c)
+		currentUser, err := helpers.GetCurrentUser(c)
 		if err != nil {
 			return c.Status(401).JSON(fiber.Map{
 				"error": "Unauthorized",
@@ -29,7 +27,7 @@ func MarketHandlers(route fiber.Router) {
 
 		watchlistResult := []string{}
 		var customWatchlistNames []string
-		err = database.GetQtraderDB().Model(&models.Watchlist{}).
+		err = database.GetQtraderDB().Model(&qdb.Watchlist{}).
 			Select("DISTINCT watchlist_name").
 			Where("cln_id = ? AND watchlist_name IS NOT NULL AND watchlist_name != ''", userID).
 			Order("watchlist_name ASC").
@@ -44,43 +42,43 @@ func MarketHandlers(route fiber.Router) {
 
 		watchlistResult = append(watchlistResult, customWatchlistNames...)
 
-		// config data extraction
-		assignedDefaultWatchlist := os.Getenv("ASSIGNED_DEFAULT_WATCHLIST")
-		if strings.ToLower(strings.TrimSpace(assignedDefaultWatchlist)) == "true" {
-			var groupID uint
-			err := database.GetQtraderDB().
-				Model(&models.RmsGroupList{}).
-				Select("group_id").
-				Where("group_value = ?", username).
-				Limit(1).
-				Scan(&groupID).Error
+		// -- config data extraction
+		// assignedDefaultWatchlist := os.Getenv("ASSIGNED_DEFAULT_WATCHLIST")
+		// if strings.ToLower(strings.TrimSpace(assignedDefaultWatchlist)) == "true" {
+		// 	var groupID uint
+		// 	err := database.GetQtraderDB().
+		// 		Model(&qdb.RmsGroupList{}).
+		// 		Select("group_id").
+		// 		Where("group_value = ?", username).
+		// 		Limit(1).
+		// 		Scan(&groupID).Error
 
-			if err != nil {
-				log.Printf("Failed to fetch group_id: %v", err)
-			} else {
-				var defaultWatchlistNames []string
+		// 	if err != nil {
+		// 		log.Printf("Failed to fetch group_id: %v", err)
+		// 	} else {
+		// 		var defaultWatchlistNames []string
 
-				err = database.GetQtraderDB().
-					Model(&models.DefaultWatchlist{}).
-					Select("DISTINCT default_watchlist.name").
-					Joins("LEFT JOIN default_watchlist_mapping ON default_watchlist.id = default_watchlist_mapping.watchlist_id").
-					Where(`default_watchlist.type = ? 
-						OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)
-						OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)`,
-						"all",
-						utils.WatchlistMappingUser, currentUser.UserID,
-						utils.WatchlistMappingGroup, groupID,
-					).
-					Order("default_watchlist.name ASC").
-					Pluck("default_watchlist.name", &defaultWatchlistNames).Error
+		// 		err = database.GetQtraderDB().
+		// 			Model(&qdb.DefaultWatchlist{}).
+		// 			Select("DISTINCT default_watchlist.name").
+		// 			Joins("LEFT JOIN default_watchlist_mapping ON default_watchlist.id = default_watchlist_mapping.watchlist_id").
+		// 			Where(`default_watchlist.type = ?
+		// 				OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)
+		// 				OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)`,
+		// 				"all",
+		// 				qdb.WatchlistMappingUser, userID,
+		// 				qdb.WatchlistMappingGroup, groupID,
+		// 			).
+		// 			Order("default_watchlist.name ASC").
+		// 			Pluck("default_watchlist.name", &defaultWatchlistNames).Error
 
-				if err != nil {
-					log.Printf("Failed to fetch default watchlists: %v", err)
-				} else {
-					watchlistResult = append(watchlistResult, defaultWatchlistNames...)
-				}
-			}
-		}
+		// 		if err != nil {
+		// 			log.Printf("Failed to fetch default watchlists: %v", err)
+		// 		} else {
+		// 			watchlistResult = append(watchlistResult, defaultWatchlistNames...)
+		// 		}
+		// 	}
+		// }
 
 		if currentUser.UsersRoles == "client" {
 			watchlistResult = append(watchlistResult, "PORTFOLIO")
@@ -96,9 +94,9 @@ func MarketHandlers(route fiber.Router) {
 			"SUSPEND",
 		)
 		return c.Status(200).JSON(fiber.Map{
-			"message": "Success",
+			"message":  "Success",
 			"username": username,
-			"data":    watchlistResult,
+			"data":     watchlistResult,
 		})
 	})
 
