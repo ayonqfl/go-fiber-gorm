@@ -23,6 +23,7 @@ func MarketHandlers(route fiber.Router) {
 
 		userID := currentUser.UserID
 		username := currentUser.Username
+		currentUserID := currentUser.ID
 		// log.Printf("User: %s ID: %s", username, userID)
 
 		watchlistResult := []string{}
@@ -43,42 +44,41 @@ func MarketHandlers(route fiber.Router) {
 		watchlistResult = append(watchlistResult, customWatchlistNames...)
 
 		// -- config data extraction
-		// assignedDefaultWatchlist := os.Getenv("ASSIGNED_DEFAULT_WATCHLIST")
-		// if strings.ToLower(strings.TrimSpace(assignedDefaultWatchlist)) == "true" {
-		// 	var groupID uint
-		// 	err := database.GetQtraderDB().
-		// 		Model(&qdb.RmsGroupList{}).
-		// 		Select("group_id").
-		// 		Where("group_value = ?", username).
-		// 		Limit(1).
-		// 		Scan(&groupID).Error
+		if helpers.GetEnvBool("ASSIGNED_DEFAULT_WATCHLIST", false) {
+			var groupID uint
+			err := database.GetQtraderDB().
+				Model(&qdb.RmsGroupList{}).
+				Select("group_id").
+				Where("group_value = ?", username).
+				Limit(1).
+				Scan(&groupID).Error
 
-		// 	if err != nil {
-		// 		log.Printf("Failed to fetch group_id: %v", err)
-		// 	} else {
-		// 		var defaultWatchlistNames []string
+			if err != nil {
+				log.Printf("Failed to fetch group_id: %v", err)
+			} else {
+				var defaultWatchlistNames []string
 
-		// 		err = database.GetQtraderDB().
-		// 			Model(&qdb.DefaultWatchlist{}).
-		// 			Select("DISTINCT default_watchlist.name").
-		// 			Joins("LEFT JOIN default_watchlist_mapping ON default_watchlist.id = default_watchlist_mapping.watchlist_id").
-		// 			Where(`default_watchlist.type = ?
-		// 				OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)
-		// 				OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)`,
-		// 				"all",
-		// 				qdb.WatchlistMappingUser, userID,
-		// 				qdb.WatchlistMappingGroup, groupID,
-		// 			).
-		// 			Order("default_watchlist.name ASC").
-		// 			Pluck("default_watchlist.name", &defaultWatchlistNames).Error
+				err = database.GetQtraderDB().
+					Model(&qdb.DefaultWatchlist{}).
+					Select("DISTINCT default_watchlist.name").
+					Joins("LEFT JOIN default_watchlist_mapping ON default_watchlist.id = default_watchlist_mapping.watchlist_id").
+					Where(`default_watchlist.type = ?
+						OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)
+						OR (default_watchlist_mapping.type = ? AND default_watchlist_mapping.group_id = ?)`,
+						"all",
+						qdb.WatchlistMappingUser, currentUserID,
+						qdb.WatchlistMappingGroup, groupID,
+					).
+					Order("default_watchlist.name ASC").
+					Pluck("default_watchlist.name", &defaultWatchlistNames).Error
 
-		// 		if err != nil {
-		// 			log.Printf("Failed to fetch default watchlists: %v", err)
-		// 		} else {
-		// 			watchlistResult = append(watchlistResult, defaultWatchlistNames...)
-		// 		}
-		// 	}
-		// }
+				if err != nil {
+					log.Printf("Failed to fetch default watchlists: %v", err)
+				} else {
+					watchlistResult = append(watchlistResult, defaultWatchlistNames...)
+				}
+			}
+		}
 
 		if currentUser.UsersRoles == "client" {
 			watchlistResult = append(watchlistResult, "PORTFOLIO")
