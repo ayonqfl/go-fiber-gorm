@@ -10,12 +10,15 @@ import (
 	"github.com/ayonqfl/go-fiber-gorm/helpers"
 	"github.com/ayonqfl/go-fiber-gorm/middleware"
 	"github.com/ayonqfl/go-fiber-gorm/routes"
+	"github.com/ayonqfl/go-fiber-gorm/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
 
 func Welcome(c *fiber.Ctx) error {
-	return c.SendString("Welcome to OMS API's")
+	return utils.SendResponse(c, 200, utils.ResponseOptions{
+		Message: "Welcome to OMS API's",
+	})
 }
 
 func setupRoutes(app *fiber.App) {
@@ -44,9 +47,9 @@ func setupRoutes(app *fiber.App) {
 			httpStatus = fiber.StatusServiceUnavailable
 		}
 
-		return c.Status(httpStatus).JSON(fiber.Map{
-			"status": status,
-			"databases": fiber.Map{
+		return utils.SendResponse(c, httpStatus, utils.ResponseOptions{
+			Message: status,
+			Data: fiber.Map{
 				"qtraderdb": qtraderHealthy,
 				"tradedb":   tradeHealthy,
 				"marketdb":  marketHealthy,

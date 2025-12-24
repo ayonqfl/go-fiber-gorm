@@ -6,6 +6,7 @@ import (
 	"github.com/ayonqfl/go-fiber-gorm/database"
 	"github.com/ayonqfl/go-fiber-gorm/models/qdb"
 	"github.com/ayonqfl/go-fiber-gorm/services"
+	"github.com/ayonqfl/go-fiber-gorm/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -93,9 +94,9 @@ func UserHandlers(route fiber.Router) {
 		query := database.GetQtraderDB().Model(&models.User{}).Order("id DESC")
 		paginated, err := services.CustomPaginate(C, query, &users, 50)
 		if err != nil {
-			return C.Status(500).JSON(fiber.Map{
-				"message": "Pagination failed",
-				"error":   err.Error(),
+			return utils.SendResponse(C, 500, utils.ResponseOptions{
+				Message: "Pagination failed",
+				Data:    err.Error(),
 			})
 		}
 
@@ -105,9 +106,9 @@ func UserHandlers(route fiber.Router) {
 		}
 		paginated.Items = responseUsers
 
-		return C.Status(200).JSON(fiber.Map{
-			"message": "Success",
-			"data":    paginated,
+		return utils.SendResponse(C, 200, utils.ResponseOptions{
+			Message: "Success",
+			Data:    paginated,
 		})
 	})
 

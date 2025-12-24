@@ -6,6 +6,7 @@ import (
 	"github.com/ayonqfl/go-fiber-gorm/database"
 	"github.com/ayonqfl/go-fiber-gorm/helpers"
 	qdb "github.com/ayonqfl/go-fiber-gorm/models/qdb"
+	"github.com/ayonqfl/go-fiber-gorm/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -36,8 +37,8 @@ func MarketHandlers(route fiber.Router) {
 
 		if err != nil {
 			log.Printf("Error querying watchlist: %v", err)
-			return c.Status(500).JSON(fiber.Map{
-				"error": "Failed to fetch watchlist",
+			return utils.SendResponse(c, 500, utils.ResponseOptions{
+				Errors: "Failed to fetch watchlist",
 			})
 		}
 
@@ -93,10 +94,9 @@ func MarketHandlers(route fiber.Router) {
 			"Z CATEGORY",
 			"SUSPEND",
 		)
-		return c.Status(200).JSON(fiber.Map{
-			"message":  "Success",
-			"username": username,
-			"data":     watchlistResult,
+		return utils.SendResponse(c, 200, utils.ResponseOptions{
+			Message: "Success",
+			Data:    watchlistResult,
 		})
 	})
 

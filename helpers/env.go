@@ -11,5 +11,5 @@ func GetEnvBool(key string, defaultValue bool) bool {
 	if value == "" {
 		return defaultValue
 	}
-	return value == "true" || value == "1" || value == "yes"
+	return value == "true" 
 }
