@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/ayonqfl/go-fiber-gorm/database"
 	"github.com/ayonqfl/go-fiber-gorm/helpers"
+	"github.com/ayonqfl/go-fiber-gorm/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 )
@@ -16,11 +17,9 @@ func AuthMiddleware() fiber.Handler {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			log.Warn("Missing Authorization header for path: ", c.Path())
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  401,
-				"message": "Invalid token",
-				"errors":  nil,
-				"data":    []string{},
+			// fiber status example: c.Status(fiber.StatusUnauthorized)
+			return utils.SendResponse(c, 401, utils.ResponseOptions{
+				Errors: "Invalid token",
 			})
 		}
 
@@ -28,11 +27,8 @@ func AuthMiddleware() fiber.Handler {
 		token := helpers.ExtractBearerToken(authHeader)
 		if token == "" {
 			log.Warn("Invalid Authorization header format for path: ", c.Path())
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  401,
-				"message": "Invalid token",
-				"errors":  nil,
-				"data":    []string{},
+			return utils.SendResponse(c, 401, utils.ResponseOptions{
+				Errors: "Invalid token",
 			})
 		}
 
@@ -40,22 +36,16 @@ func AuthMiddleware() fiber.Handler {
 		userData, err := helpers.ValidateToken(token, jwtSecret)
 		if err != nil {
 			log.Warnf("Token validation failed: %v", err)
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  401,
-				"message": "Invalid token",
-				"errors":  nil,
-				"data":    []string{},
+			return utils.SendResponse(c, 401, utils.ResponseOptions{
+				Errors: "Invalid token",
 			})
 		}
 
 		// Verify user exists in database and is active
 		if err := helpers.VerifyUserExists(database.GetQtraderDB(), userData.Username); err != nil {
 			log.Warnf("User verification failed: %v", err)
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"status":  401,
-				"message": "User not found or inactive",
-				"errors":  nil,
-				"data":    []string{},
+			return utils.SendResponse(c, 401, utils.ResponseOptions{
+				Errors: "User not found or inactive",
 			})
 		}
 
