@@ -100,4 +100,11 @@ func MarketHandlers(route fiber.Router) {
 		})
 	})
 
+	// Define market watchlist details API function
+	route.Get("/watchlist-details", func(c *fiber.Ctx) error {
+		return utils.SendResponse(c, 200, utils.ResponseOptions{
+			Message: "This is watchlist details",
+		})
+	})
+
 }

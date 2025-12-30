@@ -4,6 +4,9 @@ FROM golang:1.25-alpine AS development
 # Install Air for hot-reloading
 RUN go install github.com/air-verse/air@latest
 
+# Add Go bin to PATH
+ENV PATH="/go/bin:${PATH}"
+
 WORKDIR /app
 
 # Copy go mod files
