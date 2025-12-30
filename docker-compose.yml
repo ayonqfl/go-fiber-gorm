@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: go-fiber-oms-api
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/app
+      - go-modules:/go/pkg/mod
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - oms-network
+
+networks:
+  oms-network:
+    driver: bridge
+
+volumes:
+  go-modules:

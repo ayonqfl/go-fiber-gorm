@@ -1,0 +1,37 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+*.md
+README.md
+HelperExample.txt
+
+# Environment files (will be passed via docker-compose)
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Build artifacts
+main
+*.exe
+
+# Test files
+*_test.go
+
+# Temporary files
+tmp/
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (no need to copy into image)
+Dockerfile
+docker-compose.yml
+.dockerignore
